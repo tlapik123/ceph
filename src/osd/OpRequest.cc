@@ -98,6 +98,12 @@ void OpRequest::_unregistered() {
   request->clear_payload();
   request->release_message_throttle();
   request->set_connection(nullptr);
+  // End the OTel span so it is exported immediately, not held open  
+  // for the entire op-history retention window.  
+  if (osd_parent_span) {  
+    osd_parent_span->End();  
+    osd_parent_span = {}; 
+  }  
 }
 
 int OpRequest::maybe_init_op_info(const OSDMap &osdmap) {
